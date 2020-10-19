@@ -23,12 +23,11 @@ nao_bateu = True
 cv_image = None
 media = []
 centro = []
-atraso = 1.5E9 # 1 segundo e meio. Em nanossegundos
+atraso = 1.5E9 
 
-area = 0.0 # Variavel com a area do maior contorno
+area = 0.0 
 
-# Só usar se os relógios ROS da Raspberry e do Linux desktop estiverem sincronizados. 
-# Descarta imagens que chegam atrasadas demais
+
 check_delay = False 
 
 def scaneou(dado):
@@ -39,29 +38,28 @@ def scaneou(dado):
 	if dado.ranges[0] <= 0.25:
 		nao_bateu=False
 
+#VIDEO (LINK) DEMONSTRANDO FUNCIONAMENTO: https://youtu.be/FnpoicRNtR4
 
 
-# A função a seguir é chamada sempre que chega um novo frame
 def roda_todo_frame(imagem):
-	#print("frame")
 	global cv_image
 	global media
 	global centro
 
 	now = rospy.get_rostime()
 	imgtime = imagem.header.stamp
-	lag = now-imgtime # calcula o lag
+	lag = now-imgtime 
 	delay = lag.nsecs
-	#print("delay ", "{:.3f}".format(delay/1.0E9))
+	
 	if delay > atraso and check_delay==True:
-		#print("Descartando por causa do delay do frame:", delay)
+		
 		return 
 	try:
 		antes = time.clock()
 		cv_image = bridge.compressed_imgmsg_to_cv2(imagem, "bgr8")
-		# cv_image = cv2.flip(cv_image, -1) # Descomente se for robo real
+		
 
-		media, centro, maior_area =  cormodule.identifica_cor(cv_image) #puxa arquivo cormodule.py (centro = centro da image) (media= centro do maior contronro da cor desejada) (maior_area= tamanaho da area d maior contorno)
+		media, centro, maior_area =  cormodule.identifica_cor(cv_image) 
 		
 		depois = time.clock()
 
@@ -89,8 +87,7 @@ if __name__=="__main__":
 		while not rospy.is_shutdown():
 			vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 			if len(media) != 0 and len(centro) != 0:
-				#print("Média dos vermelhos: {0}, {1}".format(media[0], media[1]))
-				#print("Centro dos vermelhos: {0}, {1}".format(centro[0], centro[1]))
+		
 				if nao_bateu:
 					if (media[0] > centro[0]+tol):  #se a media do objeto identificado esta a direita do centro, gire a direita
 						vel = Twist(Vector3(0,0,0), Vector3(0,0,-0.1))
